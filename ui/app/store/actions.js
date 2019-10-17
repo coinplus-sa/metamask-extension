@@ -87,6 +87,7 @@ var actions = {
   unlockAndGetSeedPhrase,
   addNewKeyring,
   importNewAccount,
+  computeSolo,
   addNewAccount,
   connectHardware,
   checkHardwareStatus,
@@ -649,6 +650,22 @@ function addNewKeyring (type, opts) {
     })
   }
 }
+
+
+function computeSolo (fun, args) {
+  log.debug(`background.computeSolo`, fun, args)
+  return async (dispatch) => {
+    dispatch(actions.showLoadingIndication())
+    const newState = await pify(background.getState).call(background)
+    dispatch(actions.updateMetamaskState(newState))
+    return new Promise((resolve, reject) => {
+      var res = fun(args)
+      dispatch(actions.hideLoadingIndication())
+      return resolve(res)
+    })
+  }
+}
+
 
 function importNewAccount (strategy, args) {
   return async (dispatch) => {
