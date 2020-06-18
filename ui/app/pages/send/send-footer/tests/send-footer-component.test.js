@@ -27,22 +27,22 @@ describe('SendFooter Component', function () {
   beforeEach(() => {
     wrapper = shallow(<SendFooter
       addToAddressBookIfNew={propsMethodSpies.addToAddressBookIfNew}
-      amount={'mockAmount'}
+      amount="mockAmount"
       clearSend={propsMethodSpies.clearSend}
-      disabled={true}
-      editingTransactionId={'mockEditingTransactionId'}
+      disabled
+      editingTransactionId="mockEditingTransactionId"
       errors={{}}
       from={ { address: 'mockAddress', balance: 'mockBalance' } }
-      gasLimit={'mockGasLimit'}
-      gasPrice={'mockGasPrice'}
-      gasTotal={'mockGasTotal'}
+      gasLimit="mockGasLimit"
+      gasPrice="mockGasPrice"
+      gasTotal="mockGasTotal"
       history={historySpies}
       inError={false}
       selectedToken={{ mockProp: 'mockSelectedTokenProp' }}
       sign={propsMethodSpies.sign}
-      to={'mockTo'}
+      to="mockTo"
       toAccounts={['mockAccount']}
-      tokenBalance={'mockTokenBalance'}
+      tokenBalance="mockTokenBalance"
       unapprovedTxs={['mockTx']}
       update={propsMethodSpies.update}
       sendErrors={{}}
@@ -81,22 +81,34 @@ describe('SendFooter Component', function () {
       'should return true if inError is truthy': {
         inError: true,
         expectedResult: true,
+        gasIsLoading: false,
       },
       'should return true if gasTotal is falsy': {
         inError: false,
         gasTotal: false,
         expectedResult: true,
+        gasIsLoading: false,
       },
       'should return true if to is truthy': {
         to: '0xsomevalidAddress',
         inError: false,
         gasTotal: false,
         expectedResult: true,
+        gasIsLoading: false,
       },
       'should return true if selectedToken is truthy and tokenBalance is falsy': {
         selectedToken: true,
         tokenBalance: null,
         expectedResult: true,
+        gasIsLoading: false,
+      },
+      'should return true if gasIsLoading is truthy but all other params are falsy': {
+        inError: false,
+        gasTotal: null,
+        selectedToken: null,
+        tokenBalance: 0,
+        expectedResult: true,
+        gasIsLoading: true,
       },
       'should return false if inError is false and all other params are truthy': {
         inError: false,
@@ -104,7 +116,9 @@ describe('SendFooter Component', function () {
         selectedToken: true,
         tokenBalance: 123,
         expectedResult: false,
+        gasIsLoading: false,
       },
+
     }
     Object.entries(config).map(([description, obj]) => {
       it(description, () => {
@@ -184,22 +198,22 @@ describe('SendFooter Component', function () {
       sinon.stub(SendFooter.prototype, 'formShouldBeDisabled').returns('formShouldBeDisabledReturn')
       wrapper = shallow(<SendFooter
         addToAddressBookIfNew={propsMethodSpies.addToAddressBookIfNew}
-        amount={'mockAmount'}
+        amount="mockAmount"
         clearSend={propsMethodSpies.clearSend}
-        disabled={true}
-        editingTransactionId={'mockEditingTransactionId'}
+        disabled
+        editingTransactionId="mockEditingTransactionId"
         errors={{}}
         from={ { address: 'mockAddress', balance: 'mockBalance' } }
-        gasLimit={'mockGasLimit'}
-        gasPrice={'mockGasPrice'}
-        gasTotal={'mockGasTotal'}
+        gasLimit="mockGasLimit"
+        gasPrice="mockGasPrice"
+        gasTotal="mockGasTotal"
         history={historySpies}
         inError={false}
         selectedToken={{ mockProp: 'mockSelectedTokenProp' }}
         sign={propsMethodSpies.sign}
-        to={'mockTo'}
+        to="mockTo"
         toAccounts={['mockAccount']}
-        tokenBalance={'mockTokenBalance'}
+        tokenBalance="mockTokenBalance"
         unapprovedTxs={['mockTx']}
         update={propsMethodSpies.update}
       />, { context: { t: str => str, metricsEvent: () => ({}) } })

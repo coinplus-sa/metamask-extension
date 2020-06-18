@@ -2,7 +2,9 @@ import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import Media from 'react-media'
 import { Redirect } from 'react-router-dom'
+import { formatDate } from '../../helpers/utils/util'
 import HomeNotification from '../../components/app/home-notification'
+import DaiMigrationNotification from '../../components/app/dai-migration-component'
 import MultipleNotifications from '../../components/app/multiple-notifications'
 import WalletView from '../../components/app/wallet-view'
 import TransactionView from '../../components/app/transaction-view'
@@ -22,6 +24,7 @@ export default class Home extends PureComponent {
 
   static defaultProps = {
     unsetMigratedPrivacyMode: null,
+    hasDaiV1Token: false,
   }
 
   static propTypes = {
@@ -34,6 +37,15 @@ export default class Home extends PureComponent {
     unsetMigratedPrivacyMode: PropTypes.func,
     shouldShowSeedPhraseReminder: PropTypes.bool,
     isPopup: PropTypes.bool,
+    threeBoxSynced: PropTypes.bool,
+    setupThreeBox: PropTypes.func,
+    turnThreeBoxSyncingOn: PropTypes.func,
+    showRestorePrompt: PropTypes.bool,
+    selectedAddress: PropTypes.string,
+    restoreFromThreeBox: PropTypes.func,
+    setShowRestorePromptToFalse: PropTypes.func,
+    threeBoxLastUpdated: PropTypes.number,
+    hasDaiV1Token: PropTypes.bool,
   }
 
   componentWillMount () {
@@ -59,16 +71,35 @@ export default class Home extends PureComponent {
     }
   }
 
+  componentDidUpdate () {
+    const {
+      threeBoxSynced,
+      setupThreeBox,
+      showRestorePrompt,
+      threeBoxLastUpdated,
+    } = this.props
+    if (threeBoxSynced && showRestorePrompt && threeBoxLastUpdated === null) {
+      setupThreeBox()
+    }
+  }
+
   render () {
     const { t } = this.context
     const {
       forgottenPassword,
       providerRequests,
       history,
+      hasDaiV1Token,
       showPrivacyModeNotification,
       unsetMigratedPrivacyMode,
       shouldShowSeedPhraseReminder,
       isPopup,
+      selectedAddress,
+      restoreFromThreeBox,
+      turnThreeBoxSyncingOn,
+      setShowRestorePromptToFalse,
+      showRestorePrompt,
+      threeBoxLastUpdated,
     } = this.props
 
     if (forgottenPassword) {
@@ -90,12 +121,10 @@ export default class Home extends PureComponent {
           { !history.location.pathname.match(/^\/confirm-transaction/)
             ? (
               <TransactionView>
-                <MultipleNotifications
-                  className
-                  notifications={[
-                    {
-                      shouldBeRendered: showPrivacyModeNotification,
-                      component: <HomeNotification
+                <MultipleNotifications>
+                  {
+                    showPrivacyModeNotification
+                      ? <HomeNotification
                         descriptionText={t('privacyModeDefault')}
                         acceptText={t('learnMore')}
                         onAccept={() => {
@@ -107,11 +136,12 @@ export default class Home extends PureComponent {
                           unsetMigratedPrivacyMode()
                         }}
                         key="home-privacyModeDefault"
-                      />,
-                    },
-                    {
-                      shouldBeRendered: shouldShowSeedPhraseReminder,
-                      component: <HomeNotification
+                      />
+                      : null
+                  }
+                  {
+                    shouldShowSeedPhraseReminder
+                      ? <HomeNotification
                         descriptionText={t('backupApprovalNotice')}
                         acceptText={t('backupNow')}
                         onAccept={() => {
@@ -123,9 +153,35 @@ export default class Home extends PureComponent {
                         }}
                         infoText={t('backupApprovalInfo')}
                         key="home-backupApprovalNotice"
-                      />,
-                    },
-                  ]}/>
+                      />
+                      : null
+                  }
+                  {
+                    threeBoxLastUpdated && showRestorePrompt
+                      ? <HomeNotification
+                        descriptionText={t('restoreWalletPreferences', [ formatDate(threeBoxLastUpdated, 'M/d/y') ])}
+                        acceptText={t('restore')}
+                        ignoreText={t('noThanks')}
+                        infoText={t('dataBackupFoundInfo')}
+                        onAccept={() => {
+                          restoreFromThreeBox(selectedAddress)
+                            .then(() => {
+                              turnThreeBoxSyncingOn()
+                            })
+                        }}
+                        onIgnore={() => {
+                          setShowRestorePromptToFalse()
+                        }}
+                        key="home-privacyModeDefault"
+                      />
+                      : null
+                  }
+                  {
+                    hasDaiV1Token
+                      ? <DaiMigrationNotification />
+                      : null
+                  }
+                </MultipleNotifications>
               </TransactionView>
             )
             : null }

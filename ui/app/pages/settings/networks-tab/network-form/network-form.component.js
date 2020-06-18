@@ -24,6 +24,7 @@ export default class NetworkForm extends PureComponent {
     isCurrentRpcTarget: PropTypes.bool,
     blockExplorerUrl: PropTypes.string,
     rpcPrefs: PropTypes.object,
+    rpcUrls: PropTypes.array,
   }
 
   state = {
@@ -211,25 +212,28 @@ export default class NetworkForm extends PureComponent {
     )
   }
 
-  validateUrl = (url, stateKey) => {
-    if (validUrl.isWebUri(url)) {
-      this.setErrorTo(stateKey, '')
-    } else {
-      const appendedRpc = `http://${url}`
-      const validWhenAppended = validUrl.isWebUri(appendedRpc) && !url.match(/^https?:\/\/$/)
+  isValidWhenAppended = url => {
+    const appendedRpc = `http://${url}`
+    return validUrl.isWebUri(appendedRpc) && !url.match(/^https?:\/\/$/)
+  }
 
-      this.setErrorTo(stateKey, this.context.t(validWhenAppended ? 'uriErrorMsg' : 'invalidRPC'))
+  validateBlockExplorerURL = (url, stateKey) => {
+    if (!validUrl.isWebUri(url) && url !== '') {
+      this.setErrorTo(stateKey, this.context.t(this.isValidWhenAppended(url) ? 'urlErrorMsg' : 'invalidBlockExplorerURL'))
+    } else {
+      this.setErrorTo(stateKey, '')
     }
   }
 
-  validateBlockExplorerUrl = (url, stateKey) => {
-    if (url === '' || validUrl.isWebUri(url)) {
-      this.setErrorTo(stateKey, '')
-    } else {
-      const appendedRpc = `http://${url}`
-      const validWhenAppended = validUrl.isWebUri(appendedRpc) && !url.match(/^https?:\/\/$/)
+  validateUrlRpcUrl = (url, stateKey) => {
+    const { rpcUrls } = this.props
 
-      this.setErrorTo(stateKey, this.context.t(validWhenAppended ? 'uriErrorMsg' : 'invalidRPC'))
+    if (!validUrl.isWebUri(url) && url !== '') {
+      this.setErrorTo(stateKey, this.context.t(this.isValidWhenAppended(url) ? 'urlErrorMsg' : 'invalidRPC'))
+    } else if (rpcUrls.includes(url)) {
+      this.setErrorTo(stateKey, this.context.t('urlExistsErrorMsg'))
+    } else {
+      this.setErrorTo(stateKey, '')
     }
   }
 
@@ -263,7 +267,7 @@ export default class NetworkForm extends PureComponent {
         {this.renderFormTextField(
           'rpcUrl',
           'rpc-url',
-          this.setStateWithValue('rpcUrl', this.validateUrl),
+          this.setStateWithValue('rpcUrl', this.validateUrlRpcUrl),
           rpcUrl,
         )}
         {this.renderFormTextField(
@@ -283,7 +287,7 @@ export default class NetworkForm extends PureComponent {
         {this.renderFormTextField(
           'blockExplorerUrl',
           'block-explorer-url',
-          this.setStateWithValue('blockExplorerUrl', this.validateBlockExplorerUrl),
+          this.setStateWithValue('blockExplorerUrl', this.validateBlockExplorerURL),
           blockExplorerUrl,
           'optionalBlockExplorerUrl',
         )}

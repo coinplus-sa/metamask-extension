@@ -1,11 +1,7 @@
 import { NETWORK_TYPES } from '../helpers/constants/common'
 import { stripHexPrefix, addHexPrefix } from 'ethereumjs-util'
 
-
 const abi = require('human-standard-token-abi')
-import {
-  transactionsSelector,
-} from './transactions'
 const {
   multiplyCurrencies,
 } = require('../helpers/utils/conversion-util')
@@ -24,7 +20,6 @@ const selectors = {
   getAssetImages,
   getTokenExchangeRate,
   conversionRateSelector,
-  transactionsSelector,
   accountsWithSendEtherInfoSelector,
   getCurrentAccountWithSendEtherInfo,
   getGasIsLoading,
@@ -45,6 +40,8 @@ const selectors = {
   getNetworkIdentifier,
   isBalanceCached,
   getAdvancedInlineGasShown,
+  getUseNonceField,
+  getCustomNonceValue,
   getIsMainnet,
   getCurrentNetworkId,
   getSelectedAsset,
@@ -52,12 +49,14 @@ const selectors = {
   getAccountType,
   getNumberOfAccounts,
   getNumberOfTokens,
+  getDaiV1Token,
   isEthereumNetwork,
   getMetaMetricState,
   getRpcPrefsForCurrentProvider,
   getKnownMethodData,
   getAddressBookEntry,
   getAddressBookEntryName,
+  getFeatureFlags,
 }
 
 module.exports = selectors
@@ -210,10 +209,10 @@ function conversionRateSelector (state) {
 
 function getAddressBook (state) {
   const network = state.metamask.network
-  const addressBookEntries = Object.values(state.metamask.addressBook)
-    .filter(entry => entry.chainId && entry.chainId.toString() === network)
-
-  return addressBookEntries
+  if (!state.metamask.addressBook[network]) {
+    return []
+  }
+  return Object.values(state.metamask.addressBook[network])
 }
 
 function getAddressBookEntry (state, address) {
@@ -225,6 +224,12 @@ function getAddressBookEntry (state, address) {
 function getAddressBookEntryName (state, address) {
   const entry = getAddressBookEntry(state, address) || state.metamask.identities[address]
   return entry && entry.name !== '' ? entry.name : addressSlicer(address)
+}
+
+function getDaiV1Token (state) {
+  const OLD_DAI_CONTRACT_ADDRESS = '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359'
+  const tokens = state.metamask.tokens || []
+  return tokens.find(({address}) => checksumAddress(address) === OLD_DAI_CONTRACT_ADDRESS)
 }
 
 function accountsWithSendEtherInfoSelector (state) {
@@ -340,6 +345,14 @@ function getAdvancedInlineGasShown (state) {
   return Boolean(state.metamask.featureFlags.advancedInlineGas)
 }
 
+function getUseNonceField (state) {
+  return Boolean(state.metamask.useNonceField)
+}
+
+function getCustomNonceValue (state) {
+  return String(state.metamask.customNonceValue)
+}
+
 function getMetaMetricState (state) {
   return {
     network: getCurrentNetworkId(state),
@@ -368,4 +381,8 @@ function getKnownMethodData (state, data) {
   const { knownMethodData } = state.metamask
 
   return knownMethodData && knownMethodData[fourBytePrefix]
+}
+
+function getFeatureFlags (state) {
+  return state.metamask.featureFlags
 }

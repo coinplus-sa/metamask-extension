@@ -55,17 +55,12 @@ import {
   calcGasTotal,
 } from './send.utils.js'
 import {
-  isValidENSAddress,
+  isValidDomainName,
 } from '../../helpers/utils/util'
 
 import {
   SEND_ROUTE,
 } from '../../helpers/constants/routes'
-
-module.exports = compose(
-  withRouter,
-  connect(mapStateToProps, mapDispatchToProps)
-)(SendEther)
 
 function mapStateToProps (state) {
   return {
@@ -131,8 +126,8 @@ function mapDispatchToProps (dispatch) {
     updateSendEnsResolution: (ensResolution) => dispatch(updateSendEnsResolution(ensResolution)),
     updateSendEnsResolutionError: (message) => dispatch(updateSendEnsResolutionError(message)),
     updateToNicknameIfNecessary: (to, toNickname, addressBook) => {
-      if (isValidENSAddress(toNickname)) {
-        const addressBookEntry = addressBook.find(({ address}) => to === address) || {}
+      if (isValidDomainName(toNickname)) {
+        const addressBookEntry = addressBook.find(({ address }) => to === address) || {}
         if (!addressBookEntry.name !== toNickname) {
           dispatch(updateSendTo(to, addressBookEntry.name || ''))
         }
@@ -140,3 +135,8 @@ function mapDispatchToProps (dispatch) {
     },
   }
 }
+
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps)
+)(SendEther)

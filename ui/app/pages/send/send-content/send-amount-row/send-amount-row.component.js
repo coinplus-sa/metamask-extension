@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import debounce from 'lodash.debounce'
 import SendRowWrapper from '../send-row-wrapper'
 import AmountMaxButton from './amount-max-button'
 import UserPreferencedCurrencyInput from '../../../../components/app/user-preferenced-currency-input'
@@ -26,11 +27,27 @@ export default class SendAmountRow extends Component {
     updateSendAmount: PropTypes.func,
     updateSendAmountError: PropTypes.func,
     updateGas: PropTypes.func,
+    maxModeOn: PropTypes.bool,
   }
 
   static contextTypes = {
     t: PropTypes.func,
   }
+
+  componentDidUpdate (prevProps) {
+    const { maxModeOn: prevMaxModeOn, gasTotal: prevGasTotal } = prevProps
+    const { maxModeOn, amount, gasTotal, selectedToken } = this.props
+
+    if (maxModeOn && selectedToken && !prevMaxModeOn) {
+      this.updateGas(amount)
+    }
+
+    if (prevGasTotal !== gasTotal) {
+      this.validateAmount(amount)
+    }
+  }
+
+  updateGas = debounce(this.updateGas.bind(this), 500)
 
   validateAmount (amount) {
     const {
@@ -84,17 +101,19 @@ export default class SendAmountRow extends Component {
     }
   }
 
+  handleChange = (newAmount) => {
+    this.validateAmount(newAmount)
+    this.updateGas(newAmount)
+    this.updateAmount(newAmount)
+  }
+
   renderInput () {
     const { amount, inError, selectedToken } = this.props
     const Component = selectedToken ? UserPreferencedTokenInput : UserPreferencedCurrencyInput
 
     return (
       <Component
-        onChange={newAmount => this.validateAmount(newAmount)}
-        onBlur={newAmount => {
-          this.updateGas(newAmount)
-          this.updateAmount(newAmount)
-        }}
+        onChange={this.handleChange}
         error={inError}
         value={amount}
       />
@@ -108,7 +127,7 @@ export default class SendAmountRow extends Component {
       <SendRowWrapper
         label={`${this.context.t('amount')}:`}
         showError={inError}
-        errorType={'amount'}
+        errorType="amount"
       >
         {gasTotal && <AmountMaxButton inError={inError} />}
         { this.renderInput() }

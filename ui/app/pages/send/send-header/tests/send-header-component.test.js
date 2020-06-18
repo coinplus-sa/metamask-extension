@@ -23,8 +23,7 @@ describe('SendHeader Component', function () {
     wrapper = shallow(<SendHeader
       clearSend={propsMethodSpies.clearSend}
       history={historySpies}
-      titleKey={'mockTitleKey'}
-      subtitleParams={[ 'mockSubtitleKey', 'mockVal']}
+      titleKey="mockTitleKey"
     />, { context: { t: (str1, str2) => str2 ? str1 + str2 : str1 } })
   })
 

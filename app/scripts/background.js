@@ -2,19 +2,19 @@
  * @file The entry point for the web extension singleton process.
  */
 
-// this needs to run before anything else
+
+// these need to run before anything else
+require('./lib/freezeGlobals')
 require('./lib/setupFetchDebugging')()
 
 // polyfills
 import 'abortcontroller-polyfill/dist/polyfill-patch-fetch'
 
-const urlUtil = require('url')
 const endOfStream = require('end-of-stream')
 const pump = require('pump')
 const debounce = require('debounce-stream')
 const log = require('loglevel')
 const extension = require('extensionizer')
-const LocalStorageStore = require('obs-store/lib/localStorage')
 const LocalStore = require('./lib/local-store')
 const storeTransform = require('obs-store/lib/transform')
 const asStream = require('obs-store/lib/asStream')
@@ -43,7 +43,6 @@ const {
 // METAMASK_TEST_CONFIG is used in e2e tests to set the default network to localhost
 const firstTimeState = Object.assign({}, rawFirstTimeState, global.METAMASK_TEST_CONFIG)
 
-const STORAGE_KEY = 'metamask-config'
 const METAMASK_DEBUG = process.env.METAMASK_DEBUG
 
 log.setDefaultLevel(process.env.METAMASK_DEBUG ? 'debug' : 'warn')
@@ -67,7 +66,6 @@ let notificationIsOpen = false
 const openMetamaskTabsIDs = {}
 
 // state persistence
-const diskStore = new LocalStorageStore({ storageKey: STORAGE_KEY })
 const localStore = new LocalStore()
 let versionedData
 
@@ -75,7 +73,7 @@ let versionedData
 initialize().catch(log.error)
 
 // setup metamask mesh testing container
-setupMetamaskMeshMetrics()
+const { submitMeshMetricsEntry } = setupMetamaskMeshMetrics()
 
 
 /**
@@ -180,7 +178,6 @@ async function loadStateFromPersistence () {
   // read from disk
   // first from preferred, async API:
   versionedData = (await localStore.get()) ||
-                  diskStore.getState() ||
                   migrator.generateInitialState(firstTimeState)
 
   // check if somehow state is empty
@@ -188,21 +185,9 @@ async function loadStateFromPersistence () {
   // for a small number of users
   // https://github.com/metamask/metamask-extension/issues/3919
   if (versionedData && !versionedData.data) {
-    // try to recover from diskStore incase only localStore is bad
-    const diskStoreState = diskStore.getState()
-    if (diskStoreState && diskStoreState.data) {
-      // we were able to recover (though it might be old)
-      versionedData = diskStoreState
-      const vaultStructure = getObjStructure(versionedData)
-      sentry.captureMessage('MetaMask - Empty vault found - recovered from diskStore', {
-        // "extra" key is required by Sentry
-        extra: { vaultStructure },
-      })
-    } else {
-      // unable to recover, clear state
-      versionedData = migrator.generateInitialState(firstTimeState)
-      sentry.captureMessage('MetaMask - Empty vault found - unable to recover')
-    }
+    // unable to recover, clear state
+    versionedData = migrator.generateInitialState(firstTimeState)
+    sentry.captureMessage('MetaMask - Empty vault found - unable to recover')
   }
 
   // report migration errors to sentry
@@ -266,7 +251,15 @@ function setupController (initState, initLangCode) {
   })
 
   const provider = controller.provider
-  setupEnsIpfsResolver({ provider })
+  setupEnsIpfsResolver({
+    getCurrentNetwork: controller.getCurrentNetwork,
+    provider,
+  })
+
+  // submit rpc requests to mesh-metrics
+  controller.networkController.on('rpc-req', (data) => {
+    submitMeshMetricsEntry({ type: 'rpc', data })
+  })
 
   // report failed transactions to Sentry
   controller.txController.on(`tx:status-update`, (txId, status) => {
@@ -361,7 +354,10 @@ function setupController (initState, initLangCode) {
       const portStream = new PortStream(remotePort)
       // communication with popup
       controller.isClientOpen = true
-      controller.setupTrustedCommunication(portStream, 'MetaMask')
+      // construct fake URL for identifying internal messages
+      const metamaskUrl = new URL(window.location)
+      metamaskUrl.hostname = 'metamask'
+      controller.setupTrustedCommunication(portStream, metamaskUrl)
 
       if (processName === ENVIRONMENT_TYPE_POPUP) {
         popupIsOpen = true
@@ -397,9 +393,13 @@ function setupController (initState, initLangCode) {
 
   // communication with page or other extension
   function connectExternal (remotePort) {
-    const originDomain = urlUtil.parse(remotePort.sender.url).hostname
+    const senderUrl = new URL(remotePort.sender.url)
+    let extensionId
+    if (remotePort.sender.id !== extension.runtime.id) {
+      extensionId = remotePort.sender.id
+    }
     const portStream = new PortStream(remotePort)
-    controller.setupUntrustedCommunication(portStream, originDomain)
+    controller.setupUntrustedCommunication(portStream, senderUrl, extensionId)
   }
 
   //
@@ -429,7 +429,7 @@ function setupController (initState, initLangCode) {
       label = String(count)
     }
     extension.browserAction.setBadgeText({ text: label })
-    extension.browserAction.setBadgeBackgroundColor({ color: '#506F8B' })
+    extension.browserAction.setBadgeBackgroundColor({ color: '#037DD6' })
   }
 
   return Promise.resolve()

@@ -2,6 +2,156 @@
 
 ## Current Develop Branch
 
+## 7.7.8 Wed Mar 11 2020
+- [#8176](https://github.com/MetaMask/metamask-extension/pull/8176): Handle and set gas estimation when max mode is clicked
+- [#8178](https://github.com/MetaMask/metamask-extension/pull/8178): Use specified gas limit when speeding up a transaction
+
+## 7.7.7 Wed Mar 04 2020
+- [#8162](https://github.com/MetaMask/metamask-extension/pull/8162): Remove invalid Ledger accounts
+- [#8163](https://github.com/MetaMask/metamask-extension/pull/8163): Fix account index check
+
+## 7.7.6 Mon Mar 02 2020
+- [#8154](https://github.com/MetaMask/metamask-extension/pull/8154): Prevent signing from incorrect Ledger account
+
+## 7.7.5 Fri Feb 14 2020
+- [#8053](https://github.com/MetaMask/metamask-extension/pull/8053): Inline the source text not the binary encoding for inpage script
+- [#8049](https://github.com/MetaMask/metamask-extension/pull/8049): Add warning to watchAsset API when editing a known token
+- [#8051](https://github.com/MetaMask/metamask-extension/pull/8051): Update Wyre ETH purchase url
+- [#8059](https://github.com/MetaMask/metamask-extension/pull/8059): Attempt ENS resolution on any valid domain name
+
+## 7.7.4 Wed Jan 29 2020
+- [#7918](https://github.com/MetaMask/metamask-extension/pull/7918): Update data on Approve screen after updating custom spend limit
+- [#7919](https://github.com/MetaMask/metamask-extension/pull/7919): Allow editing max spend limit
+- [#7920](https://github.com/MetaMask/metamask-extension/pull/7920): Validate custom spend limit
+- [#7944](https://github.com/MetaMask/metamask-extension/pull/7944): Only resolve ENS on mainnet
+- [#7954](https://github.com/MetaMask/metamask-extension/pull/7954): Update ENS registry addresses
+
+## 7.7.3 Fri Jan 24 2020
+- [#7894](https://github.com/MetaMask/metamask-extension/pull/7894): Update GABA dependency version
+- [#7901](https://github.com/MetaMask/metamask-extension/pull/7901): Use eth-contract-metadata@1.12.1
+- [#7910](https://github.com/MetaMask/metamask-extension/pull/7910): Fixing broken JSON import help link
+
+## 7.7.2 Fri Jan 10 2020
+- [#7753](https://github.com/MetaMask/metamask-extension/pull/7753): Fix gas estimate for tokens
+- [#7473](https://github.com/MetaMask/metamask-extension/pull/7473): Fix transaction order on transaction confirmation screen
+
+## 7.7.1 Wed Dec 04 2019
+- [#7488](https://github.com/MetaMask/metamask-extension/pull/7488): Fix text overlap when expanding transaction
+- [#7491](https://github.com/MetaMask/metamask-extension/pull/7491): Update gas when asset is changed on send screen
+- [#7500](https://github.com/MetaMask/metamask-extension/pull/7500): Remove unused onClick prop from Dropdown component
+- [#7502](https://github.com/MetaMask/metamask-extension/pull/7502): Fix chainId for non standard networks
+- [#7519](https://github.com/MetaMask/metamask-extension/pull/7519): Fixing hardware connect error display
+- [#7501](https://github.com/MetaMask/metamask-extension/pull/7501): Fix accessibility of first-time-flow terms checkboxes
+- [#7579](https://github.com/MetaMask/metamask-extension/pull/7579): Prevent Maker migration dismissal timeout state from being overwritten
+- [#7581](https://github.com/MetaMask/metamask-extension/pull/7581): Persist Maker migration dismissal timeout
+- [#7484](https://github.com/MetaMask/metamask-extension/pull/7484): Ensure transactions are shown in the order they are received
+- [#7604](https://github.com/MetaMask/metamask-extension/pull/7604): Process URL fragment for ens-ipfs redirects
+- [#7628](https://github.com/MetaMask/metamask-extension/pull/7628): Fix typo that resulted in degrated account menu performance
+- [#7558](https://github.com/MetaMask/metamask-extension/pull/7558): Use localized messages for NotificationModal buttons
+
+## 7.7.0 Thu Nov 28 2019 [WITHDRAWN]
+- [#7004](https://github.com/MetaMask/metamask-extension/pull/7004): Connect distinct accounts per site
+- [#7480](https://github.com/MetaMask/metamask-extension/pull/7480): Fixed link on root README.md
+- [#7482](https://github.com/MetaMask/metamask-extension/pull/7482): Update Wyre ETH purchase url
+- [#7484](https://github.com/MetaMask/metamask-extension/pull/7484): Ensure transactions are shown in the order they are received
+- [#7491](https://github.com/MetaMask/metamask-extension/pull/7491): Update gas when token is changed on the send screen
+- [#7501](https://github.com/MetaMask/metamask-extension/pull/7501): Fix accessibility of first-time-flow terms checkboxes
+- [#7502](https://github.com/MetaMask/metamask-extension/pull/7502): Fix chainId for non standard networks
+- [#7579](https://github.com/MetaMask/metamask-extension/pull/7579): Fix timing of DAI migration notifications after dismissal
+- [#7519](https://github.com/MetaMask/metamask-extension/pull/7519): Fixing hardware connect error display
+- [#7558](https://github.com/MetaMask/metamask-extension/pull/7558): Use localized messages for NotificationModal buttons
+- [#7488](https://github.com/MetaMask/metamask-extension/pull/7488): Fix text overlap when expanding transaction
+
+## 7.6.1 Tue Nov 19 2019
+- [#7475](https://github.com/MetaMask/metamask-extension/pull/7475): Add 'Remind Me Later' to the Maker notification
+- [#7436](https://github.com/MetaMask/metamask-extension/pull/7436): Add additional rpcUrl verification
+- [#7468](https://github.com/MetaMask/metamask-extension/pull/7468): Show transaction fee units on approve screen
+
+## 7.6.0 Mon Nov 18 2019
+- [#7450](https://github.com/MetaMask/metamask-extension/pull/7450): Add migration notification for users with non-zero Sai
+- [#7461](https://github.com/MetaMask/metamask-extension/pull/7461): Import styles for showing multiple notifications
+- [#7451](https://github.com/MetaMask/metamask-extension/pull/7451): Add button disabled when password is empty
+
+## 7.5.3 Fri Nov 15 2019
+- [#7412](https://github.com/MetaMask/metamask-extension/pull/7412): lock eth-contract-metadata (#7412)
+- [#7416](https://github.com/MetaMask/metamask-extension/pull/7416): Add eslint import plugin to help detect unresolved paths
+- [#7414](https://github.com/MetaMask/metamask-extension/pull/7414): Ensure SignatureRequestOriginal 'beforeunload' handler is bound (#7414)
+- [#7430](https://github.com/MetaMask/metamask-extension/pull/7430): Update badge colour
+- [#7408](https://github.com/MetaMask/metamask-extension/pull/7408): Utilize the full size of icon space (#7408)
+- [#7431](https://github.com/MetaMask/metamask-extension/pull/7431): Add all icons to manifest (#7431)
+- [#7426](https://github.com/MetaMask/metamask-extension/pull/7426): Ensure Etherscan result is valid before reading it (#7426)
+- [#7434](https://github.com/MetaMask/metamask-extension/pull/7434): Update 512px icon (#7434)
+- [#7410](https://github.com/MetaMask/metamask-extension/pull/7410): Fix sourcemaps for Sentry
+- [#7420](https://github.com/MetaMask/metamask-extension/pull/7420): Adds and end to end test for typed signature requests
+- [#7439](https://github.com/MetaMask/metamask-extension/pull/7439): Add metricsEvent to contextTypes (#7439)
+- [#7419](https://github.com/MetaMask/metamask-extension/pull/7419): Added webRequest.RequestFilter to filter main_frame .eth requests (#7419)
+
+## 7.5.2 Thu Nov 14 2019
+- [#7414](https://github.com/MetaMask/metamask-extension/pull/7414): Ensure SignatureRequestOriginal 'beforeunload' handler is bound
+
+## 7.5.1 Tuesday Nov 13 2019
+- [#7402](https://github.com/MetaMask/metamask-extension/pull/7402): Fix regression for signed types data screens
+- [#7390](https://github.com/MetaMask/metamask-extension/pull/7390): Update json-rpc-engine
+- [#7401](https://github.com/MetaMask/metamask-extension/pull/7401): Reject connection request on window close
+
+## 7.5.0 Mon Nov 04 2019
+- [#7328](https://github.com/MetaMask/metamask-extension/pull/7328): ignore known transactions on first broadcast and continue with normal flow
+- [#7327](https://github.com/MetaMask/metamask-extension/pull/7327): eth_getTransactionByHash will now check metamask's local history for pending transactions
+- [#7333](https://github.com/MetaMask/metamask-extension/pull/7333): Cleanup beforeunload handler after transaction is resolved
+- [#7038](https://github.com/MetaMask/metamask-extension/pull/7038): Add support for ZeroNet
+- [#7334](https://github.com/MetaMask/metamask-extension/pull/7334): Add web3 deprecation warning
+- [#6924](https://github.com/MetaMask/metamask-extension/pull/6924): Add Estimated time to pending tx
+- [#7177](https://github.com/MetaMask/metamask-extension/pull/7177): ENS Reverse Resolution support
+- [#6891](https://github.com/MetaMask/metamask-extension/pull/6891): New signature request v3 UI
+- [#7348](https://github.com/MetaMask/metamask-extension/pull/7348): fix width in first time flow button
+- [#7271](https://github.com/MetaMask/metamask-extension/pull/7271): Redesign approve screen
+- [#7354](https://github.com/MetaMask/metamask-extension/pull/7354): fix account menu width
+- [#7379](https://github.com/MetaMask/metamask-extension/pull/7379): Set default advanced tab gas limit
+- [#7380](https://github.com/MetaMask/metamask-extension/pull/7380): Fix advanced tab gas chart
+- [#7374](https://github.com/MetaMask/metamask-extension/pull/7374): Hide accounts dropdown scrollbars on Firefox
+- [#7357](https://github.com/MetaMask/metamask-extension/pull/7357): Update to gaba@1.8.0
+- [#7335](https://github.com/MetaMask/metamask-extension/pull/7335): Add onbeforeunload and have it call onCancel
+
+## 7.4.0 Tue Oct 29 2019
+- [#7186](https://github.com/MetaMask/metamask-extension/pull/7186): Use `AdvancedGasInputs` in `AdvancedTabContent`
+- [#7304](https://github.com/MetaMask/metamask-extension/pull/7304): Move signTypedData signing out to keyrings
+- [#7306](https://github.com/MetaMask/metamask-extension/pull/7306): correct the zh-TW translation
+- [#7309](https://github.com/MetaMask/metamask-extension/pull/7309): Freeze Promise global on boot
+- [#7296](https://github.com/MetaMask/metamask-extension/pull/7296): Add "Retry" option for failed transactions
+- [#7319](https://github.com/MetaMask/metamask-extension/pull/7319): Fix transaction list item status spacing issue
+- [#7218](https://github.com/MetaMask/metamask-extension/pull/7218): Add hostname and extensionId to site metadata
+- [#7324](https://github.com/MetaMask/metamask-extension/pull/7324): Fix contact deletion
+- [#7326](https://github.com/MetaMask/metamask-extension/pull/7326): Fix edit contact details
+- [#7325](https://github.com/MetaMask/metamask-extension/pull/7325): Update eth-json-rpc-filters to fix memory leak
+- [#7334](https://github.com/MetaMask/metamask-extension/pull/7334): Add web3 deprecation warning
+
+## 7.3.1 Mon Oct 21 2019
+- [#7298](https://github.com/MetaMask/metamask-extension/pull/7298): Turn off full screen vs popup a/b test
+
+## 7.3.0 Fri Sep 27 2019
+- [#6972](https://github.com/MetaMask/metamask-extension/pull/6972): 3box integration
+- [#7168](https://github.com/MetaMask/metamask-extension/pull/7168): Add fixes for German translations
+- [#7170](https://github.com/MetaMask/metamask-extension/pull/7170): Remove the disk store
+- [#7176](https://github.com/MetaMask/metamask-extension/pull/7176): Performance: Delivery optimized images
+- [#7189](https://github.com/MetaMask/metamask-extension/pull/7189): add goerli to incoming tx
+- [#7190](https://github.com/MetaMask/metamask-extension/pull/7190): Remove unused locale messages
+- [#7173](https://github.com/MetaMask/metamask-extension/pull/7173): Fix RPC error messages
+- [#7205](https://github.com/MetaMask/metamask-extension/pull/7205): address book entries by chainId
+- [#7207](https://github.com/MetaMask/metamask-extension/pull/7207): obs-store/local-store should upgrade webextension error to real error
+- [#7162](https://github.com/MetaMask/metamask-extension/pull/7162): Add a/b test for full screen transaction confirmations
+- [#7089](https://github.com/MetaMask/metamask-extension/pull/7089): Add advanced setting to enable editing nonce on confirmation screens
+- [#7239](https://github.com/MetaMask/metamask-extension/pull/7239): Update ETH logo, update deposit Ether logo height and width
+- [#7255](https://github.com/MetaMask/metamask-extension/pull/7255): Use translated string for state log
+- [#7266](https://github.com/MetaMask/metamask-extension/pull/7266): fix issue of xyz ens not resolving
+- [#7253](https://github.com/MetaMask/metamask-extension/pull/7253): Prevent Logout Timer that's longer than a week.
+- [#7285](https://github.com/MetaMask/metamask-extension/pull/7285): Lessen the length of ENS validation to 3
+- [#7287](https://github.com/MetaMask/metamask-extension/pull/7287): Fix phishing detect script
+
+## 7.2.3 Fri Oct 04 2019
+- [#7252](https://github.com/MetaMask/metamask-extension/pull/7252): Fix gas limit when sending tx without data to a contract
+- [#7260](https://github.com/MetaMask/metamask-extension/pull/7260): Do not transate on seed phrases
+- [#7252](https://github.com/MetaMask/metamask-extension/pull/7252): Ensure correct tx category when sending to contracts without tx data
+
 ## 7.2.2 Tue Sep 24 2019
 - [#7213](https://github.com/MetaMask/metamask-extension/pull/7213): Update minimum Firefox verison to 56.0
 

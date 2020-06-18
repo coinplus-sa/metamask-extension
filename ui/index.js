@@ -61,11 +61,19 @@ async function startApp (metamaskState, backgroundConnection, opts) {
   const numberOfUnapprivedTx = unapprovedTxsAll.length
   if (numberOfUnapprivedTx > 0) {
     store.dispatch(actions.showConfTxPage({
-      id: unapprovedTxsAll[numberOfUnapprivedTx - 1].id,
+      id: unapprovedTxsAll[0].id,
     }))
   }
 
   backgroundConnection.on('update', function (metamaskState) {
+    const currentState = store.getState()
+    const { currentLocale } = currentState.metamask
+    const { currentLocale: newLocale } = metamaskState
+
+    if (currentLocale && newLocale && currentLocale !== newLocale) {
+      store.dispatch(actions.updateCurrentLocale(newLocale))
+    }
+
     store.dispatch(actions.updateMetamaskState(metamaskState))
   })
 
@@ -76,6 +84,9 @@ async function startApp (metamaskState, backgroundConnection, opts) {
     },
     setProviderType: (type) => {
       store.dispatch(actions.setProviderType(type))
+    },
+    setFeatureFlag: (key, value) => {
+      store.dispatch(actions.setFeatureFlag(key, value))
     },
   }
 

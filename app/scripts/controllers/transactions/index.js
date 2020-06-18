@@ -3,6 +3,7 @@ const ObservableStore = require('obs-store')
 const ethUtil = require('ethereumjs-util')
 const Transaction = require('ethereumjs-tx')
 const EthQuery = require('ethjs-query')
+const { errors: rpcErrors } = require('eth-json-rpc-errors')
 const abi = require('human-standard-token-abi')
 const abiDecoder = require('abi-decoder')
 abiDecoder.addABI(abi)
@@ -166,11 +167,11 @@ class TransactionController extends EventEmitter {
           case 'submitted':
             return resolve(finishedTxMeta.hash)
           case 'rejected':
-            return reject(cleanErrorStack(new Error('MetaMask Tx Signature: User denied transaction signature.')))
+            return reject(cleanErrorStack(rpcErrors.eth.userRejectedRequest('MetaMask Tx Signature: User denied transaction signature.')))
           case 'failed':
-            return reject(cleanErrorStack(new Error(finishedTxMeta.err.message)))
+            return reject(cleanErrorStack(rpcErrors.internal(finishedTxMeta.err.message)))
           default:
-            return reject(cleanErrorStack(new Error(`MetaMask Tx Signature: Unknown problem: ${JSON.stringify(finishedTxMeta.txParams)}`)))
+            return reject(cleanErrorStack(rpcErrors.internal(`MetaMask Tx Signature: Unknown problem: ${JSON.stringify(finishedTxMeta.txParams)}`)))
         }
       })
     })
@@ -191,13 +192,18 @@ class TransactionController extends EventEmitter {
       throw new Error(`Transaction from address isn't valid for this account`)
     }
     txUtils.validateTxParams(normalizedTxParams)
-    // construct txMeta
-    const { transactionCategory, getCodeResponse } = await this._determineTransactionCategory(txParams)
+    /**
+    `generateTxMeta` adds the default txMeta properties to the passed object.
+    These include the tx's `id`. As we use the id for determining order of
+    txes in the tx-state-manager, it is necessary to call the asynchronous
+    method `this._determineTransactionCategory` after `generateTxMeta`.
+    */
     let txMeta = this.txStateManager.generateTxMeta({
       txParams: normalizedTxParams,
       type: TRANSACTION_TYPE_STANDARD,
-      transactionCategory,
     })
+    const { transactionCategory, getCodeResponse } = await this._determineTransactionCategory(txParams)
+    txMeta.transactionCategory = transactionCategory
     this.addTx(txMeta)
     this.emit('newUnapprovedTx', txMeta)
 
@@ -306,7 +312,17 @@ class TransactionController extends EventEmitter {
     return newTxMeta
   }
 
-  async createSpeedUpTransaction (originalTxId, customGasPrice) {
+  /**
+   * Creates a new approved transaction to attempt to speed up a previously submitted transaction. The
+   * new transaction contains the same nonce as the previous. By default, the new transaction will use
+   * the same gas limit and a 10% higher gas price, though it is possible to set a custom value for
+   * each instead.
+   * @param {number} originalTxId - the id of the txMeta that you want to speed up
+   * @param {string} [customGasPrice] - The new custom gas price, in hex
+   * @param {string} [customGasLimit] - The new custom gas limt, in hex
+   * @returns {txMeta}
+   */
+  async createSpeedUpTransaction (originalTxId, customGasPrice, customGasLimit) {
     const originalTxMeta = this.txStateManager.getTx(originalTxId)
     const { txParams } = originalTxMeta
     const { gasPrice: lastGasPrice } = txParams
@@ -323,6 +339,10 @@ class TransactionController extends EventEmitter {
       status: TRANSACTION_STATUS_APPROVED,
       type: TRANSACTION_TYPE_RETRY,
     })
+
+    if (customGasLimit) {
+      newTxMeta.txParams.gas = customGasLimit
+    }
 
     this.addTx(newTxMeta)
     await this.approveTransaction(newTxMeta.id)
@@ -372,14 +392,21 @@ class TransactionController extends EventEmitter {
       const txMeta = this.txStateManager.getTx(txId)
       const fromAddress = txMeta.txParams.from
       // wait for a nonce
+      let { customNonceValue = null } = txMeta
+      customNonceValue = Number(customNonceValue)
       nonceLock = await this.nonceTracker.getNonceLock(fromAddress)
       // add nonce to txParams
       // if txMeta has lastGasPrice then it is a retry at same nonce with higher
       // gas price transaction and their for the nonce should not be calculated
       const nonce = txMeta.lastGasPrice ? txMeta.txParams.nonce : nonceLock.nextNonce
-      txMeta.txParams.nonce = ethUtil.addHexPrefix(nonce.toString(16))
+      const customOrNonce = customNonceValue || nonce
+
+      txMeta.txParams.nonce = ethUtil.addHexPrefix(customOrNonce.toString(16))
       // add nonce debugging information to txMeta
       txMeta.nonceDetails = nonceLock.nonceDetails
+      if (customNonceValue) {
+        txMeta.nonceDetails.customNonceValue = customNonceValue
+      }
       this.txStateManager.updateTx(txMeta, 'transactions#approveTransaction')
       // sign transaction
       const rawTx = await this.signTransaction(txId)
@@ -415,6 +442,15 @@ class TransactionController extends EventEmitter {
     const fromAddress = txParams.from
     const ethTx = new Transaction(txParams)
     await this.signEthTx(ethTx, fromAddress)
+
+    // add r,s,v values for provider request purposes see createMetamaskMiddleware
+    // and JSON rpc standard for further explanation
+    txMeta.r = ethUtil.bufferToHex(ethTx.r)
+    txMeta.s = ethUtil.bufferToHex(ethTx.s)
+    txMeta.v = ethUtil.bufferToHex(ethTx.v)
+
+    this.txStateManager.updateTx(txMeta, 'transactions#signTransaction: add r, s, v values')
+
     // set state to signed
     this.txStateManager.setTxStatusSigned(txMeta.id)
     const rawTx = ethUtil.bufferToHex(ethTx.serialize())
@@ -431,8 +467,19 @@ class TransactionController extends EventEmitter {
     const txMeta = this.txStateManager.getTx(txId)
     txMeta.rawTx = rawTx
     this.txStateManager.updateTx(txMeta, 'transactions#publishTransaction')
-    const txHash = await this.query.sendRawTransaction(rawTx)
+    let txHash
+    try {
+      txHash = await this.query.sendRawTransaction(rawTx)
+    } catch (error) {
+      if (error.message.toLowerCase().includes('known transaction')) {
+        txHash = ethUtil.sha3(ethUtil.addHexPrefix(rawTx)).toString('hex')
+        txHash = ethUtil.addHexPrefix(txHash)
+      } else {
+        throw error
+      }
+    }
     this.setTxHash(txId, txHash)
+
     this.txStateManager.setTxStatusSubmitted(txId)
   }
 
@@ -595,21 +642,21 @@ class TransactionController extends EventEmitter {
     ].find(tokenMethodName => tokenMethodName === name && name.toLowerCase())
 
     let result
-    let code
-    if (!txParams.data) {
-      result = SEND_ETHER_ACTION_KEY
-    } else if (tokenMethodName) {
+    if (txParams.data && tokenMethodName) {
       result = tokenMethodName
-    } else if (!to) {
+    } else if (txParams.data && !to) {
       result = DEPLOY_CONTRACT_ACTION_KEY
-    } else {
+    }
+
+    let code
+    if (!result) {
       try {
         code = await this.query.getCode(to)
       } catch (e) {
         code = null
         log.warn(e)
       }
-      // For an address with no code, geth will return '0x', and ganache-core v2.2.1 will return '0x0'
+
       const codeIsEmpty = !code || code === '0x' || code === '0x0'
 
       result = codeIsEmpty ? SEND_ETHER_ACTION_KEY : CONTRACT_INTERACTION_KEY
